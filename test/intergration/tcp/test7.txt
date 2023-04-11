@@ -1,0 +1,45 @@
+#include <bits/types/struct_itimerspec.h>
+#include <chrono>
+#include <cstddef>
+#include <cstdio>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <strings.h>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include "event_loop/EventLoopThread.hpp"
+#include "tcp/Socket.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+#include <sys/timerfd.h>
+#include "tcp/Acceptor.hpp"
+#include "tcp/SocketsOps.hpp"
+#include "tcp/InetAddress.hpp"
+#include "init.hpp"
+
+EventLoop* g_loop;
+int g_flag = 0;
+
+using namespace std;
+
+void new_connection(int sock_fd, const InetAddress& peer_addr) {
+    printf("new_connection(): accpet a new connection from %s\n", peer_addr.to_host_port().data());
+    ::write(sock_fd, "How are you?\n", 13);
+    sockets::close(sock_fd);
+}
+
+int main() {
+    init_log();
+    cout << "main(): pid = " << getpid() << endl;
+
+    InetAddress listen_addr(9981);
+    EventLoop loop;
+
+    Acceptor acceptor(&loop, listen_addr);
+    acceptor.set_new_connection_callback(new_connection);
+    acceptor.listen();
+
+    loop.loop();
+}

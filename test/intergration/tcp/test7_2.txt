@@ -1,0 +1,74 @@
+#include <bits/types/struct_itimerspec.h>
+#include <chrono>
+#include <cstddef>
+#include <cstdio>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <strings.h>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include "event_loop/EventLoopThread.hpp"
+#include "tcp/Socket.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+#include <sys/timerfd.h>
+#include "tcp/Acceptor.hpp"
+#include "tcp/SocketsOps.hpp"
+#include "tcp/InetAddress.hpp"
+#include "init.hpp"
+
+EventLoop* g_loop;
+int g_flag = 0;
+
+using namespace std;
+
+static std::string getCurrentTime(std::chrono::system_clock::time_point& t) {
+	std::time_t now_time_t = std::chrono::system_clock::to_time_t(t);
+    std::tm* now_tm = std::localtime(&now_time_t);
+
+	char buffer[128];
+	strftime(buffer, sizeof(buffer), "[%F %T", now_tm);
+	std::ostringstream ss;
+	ss.fill('0');
+
+	std::chrono::milliseconds ms;
+
+    ms = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()) % 1000;
+    ss << buffer << '.' << ms.count() << "]\n";
+
+	return ss.str();
+}
+
+void new_connection_time(int sock_fd, const InetAddress& peer_addr) {
+    printf("new_connection(): accpet a new connection from %s\n", peer_addr.to_host_port().data());
+    auto now =std::chrono::system_clock::now();
+    string now_str = getCurrentTime(now);
+    ::write(sock_fd, now_str.c_str(), now_str.size());
+    sockets::close(sock_fd);
+}
+
+void new_connection_hello(int sock_fd, const InetAddress& peer_addr) {
+    printf("new_connection(): accpet a new connection from %s\n", peer_addr.to_host_port().data());
+    ::write(sock_fd, "How are you?\n", 13);
+    sockets::close(sock_fd);
+}
+
+int main() {
+    init_log();
+    cout << "main(): pid = " << getpid() << endl;
+
+    InetAddress listen_addr_hello(9981);
+    InetAddress listen_addr_timer(9982);
+    EventLoop loop;
+
+    Acceptor acceptor_timer(&loop, listen_addr_timer);
+    Acceptor acceptor_hello(&loop, listen_addr_hello);
+    acceptor_hello.set_new_connection_callback(new_connection_hello);
+    acceptor_timer.set_new_connection_callback(new_connection_time);
+    acceptor_hello.listen();
+    acceptor_timer.listen();
+
+    loop.loop();
+}

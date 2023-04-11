@@ -1,0 +1,21 @@
+#include <iostream>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/EventLoop.hpp"
+#include "init.hpp"
+
+EventLoop* g_loop;
+void test2() {
+    g_loop->loop();
+}
+
+int main(int, char**) {
+    init_log();
+    EventLoop loop;
+    g_loop = &loop;
+    std::thread t{&test2};
+    t.join();
+
+    std::cout << "End loop!" << std::endl;
+    return 0;
+} 

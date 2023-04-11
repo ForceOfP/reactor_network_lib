@@ -1,0 +1,13 @@
+*.cmake
+*.tcl
+*.a
+Makefile
+.cache
+CMakeFiles
+build
+Testing
+CMakeCache.txt
+
+.log
+network
+init.hpp

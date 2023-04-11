@@ -1,0 +1,42 @@
+#include <bits/types/struct_itimerspec.h>
+#include <chrono>
+#include <cstddef>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <strings.h>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include "event_loop/EventLoopThread.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+#include <sys/timerfd.h>
+#include "init.hpp"
+
+EventLoop* g_loop;
+int g_flag = 0;
+
+using namespace std;
+
+void run_in_thread() {
+    cout << "runInThread(): pid = " << getpid() << ", tid = " << this_thread::get_id() << endl;
+}
+
+
+int main(int, char**) {
+    init_log();
+    cout << "main(): pid = " << getpid() << ", tid = " << this_thread::get_id() << endl;
+
+    EventLoopThread loop_thread;
+    EventLoop *loop = loop_thread.start_loop();
+
+    loop->run_in_loop(run_in_thread);
+    sleep(1);
+    loop->run_after(2, run_in_thread);
+    sleep(3);
+    loop->quit();
+
+    printf("exit main()\n");
+    return 0;
+}

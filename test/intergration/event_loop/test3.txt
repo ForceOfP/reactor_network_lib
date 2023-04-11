@@ -1,0 +1,46 @@
+#include <bits/types/struct_itimerspec.h>
+#include <cstddef>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <strings.h>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include <sys/timerfd.h>
+#include "init.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+
+using namespace std;
+
+EventLoop* g_loop;
+
+void time_out(TimeStamp receive_time) {
+    std::cerr << "Timeout" << receive_time.to_string() << std::endl;
+    g_loop->quit();
+};
+
+int main(int, char**) {
+    init_log();
+    cout << "Start at " << TimeStamp::now().to_string() << std::endl;
+    EventLoop loop;
+    g_loop = &loop;
+    
+    int timer_fd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    Channel channel(&loop, timer_fd);
+    channel.set_read_callback(time_out);
+    channel.enable_reading();
+
+    struct itimerspec how_long;
+    bzero(&how_long, sizeof how_long);
+    how_long.it_value.tv_sec = 5;
+    ::timerfd_settime(timer_fd, 0, &how_long, nullptr);
+    
+    std::cout << "Start loop!" << std::endl;
+
+    loop.loop();
+
+    ::close(timer_fd);
+    return 0;
+}

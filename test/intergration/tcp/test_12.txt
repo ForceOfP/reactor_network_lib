@@ -1,0 +1,50 @@
+#include <bits/types/struct_itimerspec.h>
+#include <chrono>
+#include <cstddef>
+#include <cstdio>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <strings.h>
+#include <sys/types.h>
+#include <thread>
+#include <unistd.h>
+#include "buffer/Buffer.hpp"
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include "event_loop/EventLoopThread.hpp"
+#include "event_loop/EventLoopThreadPool.hpp"
+#include "tcp/Callbacks.hpp"
+#include "tcp/Socket.hpp"
+#include "tcp/Connector.hpp"
+#include "tcp/TcpServer.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+#include <sys/timerfd.h>
+#include "tcp/Acceptor.hpp"
+#include "tcp/SocketsOps.hpp"
+#include "tcp/InetAddress.hpp"
+#include "init.hpp"
+
+EventLoop* g_loop;
+int g_flag = 0;
+
+using namespace std;
+
+void connect_callback(int sock_fd) {
+    cout << "connected\n";
+    g_loop->quit();
+}
+
+int main() {
+    init_log();
+    InetAddress listen_addr("127.0.0.1", 9981);
+    EventLoop loop;
+    g_loop = &loop;
+
+    Connector connector(&loop, listen_addr);
+    connector.set_new_connection_callback(connect_callback);
+    connector.start();
+    
+    loop.loop();
+}

@@ -1,0 +1,58 @@
+#include <bits/types/struct_itimerspec.h>
+#include <chrono>
+#include <cstddef>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <strings.h>
+#include <thread>
+#include <unistd.h>
+#include "event_loop/Channel.hpp"
+#include "event_loop/EventLoop.hpp"
+#include "init.hpp"
+#include "time_utils/TimeDataStructure.hpp"
+#include <sys/timerfd.h>
+
+EventLoop* g_loop;
+int cnt = 0;
+
+using namespace std;
+
+void print_tid() {
+    cout << "pid = " << getpid() << ", tid = " << this_thread::get_id() << endl;
+    cout << "now " << TimeStamp::now().to_string();
+}
+
+void print(const char* msg) {
+    printf("msg %s %s\n", TimeStamp::now().to_string().c_str(), msg);
+    if (++cnt == 20) {
+        g_loop->quit();
+    }
+}
+
+TimerId to_cancel;
+void cancel_self() {
+    print("cancelSelf()");
+    g_loop->cancel(to_cancel);
+}
+
+int main(int, char**) {
+    init_log();
+    print_tid();
+    EventLoop loop;
+    g_loop = &loop;
+
+    print("main");
+    loop.run_after(1, [] { return print("once1"); });
+    loop.run_after(1.5, [] { return print("once1.5"); });
+    loop.run_after(2.5, [] { return print("once2.5"); });
+    loop.run_after(3.5, [] { return print("once3.5"); });
+    auto t = loop.run_every(2, [] { return print("every2"); });
+    loop.run_every(3, [] { return print("every3"); });
+    loop.run_after(10, [&loop, t]{loop.cancel(t);});
+    to_cancel = loop.run_every(5, [] {cancel_self();});
+
+    loop.loop();
+    print("main loop exits");
+    sleep(1);
+}
