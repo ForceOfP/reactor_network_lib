@@ -8,6 +8,6 @@ build
 Testing
 CMakeCache.txt
 
-.log
+*.log
 network
 init.hpp
