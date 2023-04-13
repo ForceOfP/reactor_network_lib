@@ -100,7 +100,7 @@ public:
         if (writable_bytes() < len) {
             make_space(len);
         }
-        assert(writable_bytes() > len);
+        assert(writable_bytes() >= len);
     }
 
     void has_written(size_t len) {
@@ -118,8 +118,8 @@ public:
     void prepend(const void* data, size_t len) {
         assert(len <= prependable_bytes());
         reader_index_ -= len;
-        auto data_ = static_cast<const char*>(data);
-        std::copy(data_, data_ + len, begin_write() + reader_index_);
+        auto data_d = static_cast<const char*>(data);
+        std::copy(data_d, data_d + len, begin_write() + reader_index_);
     }
 
     void shrink(size_t reserve) {
@@ -134,6 +134,10 @@ public:
     /// @return result of read(2), @c errno is saved
     ssize_t read_fd(int fd, int* savedErrno);
 
+    friend bool operator==(const Buffer& a, const Buffer& b) {
+        return a.buffer_ == b.buffer_; 
+    }
+
 private:
     char* begin() {
         return &*buffer_.begin();
@@ -145,8 +149,9 @@ private:
 
     void make_space(size_t len) {
         if (writable_bytes() + prependable_bytes() < len + k_cheap_prepend) {
-            buffer_.resize(writer_index_ + len);
+            buffer_.resize(len + writer_index_);
         } else {
+            // move readable data to the front, make space inside buffer
             assert(k_cheap_prepend < reader_index_);
             size_t readable = readable_bytes();
             std::copy(begin() + reader_index_, begin() + writer_index_, begin() + k_cheap_prepend);

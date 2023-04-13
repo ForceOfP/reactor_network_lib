@@ -18,6 +18,7 @@ public:
     EventLoopThreadPool& operator=(const EventLoopThreadPool&) = delete;
 
     void set_thread_num(int num_threads) {num_threads_ = num_threads;}
+    size_t get_thread_num() {return threads_.size();}
     void start();
     EventLoop* get_next_loop();
 private:

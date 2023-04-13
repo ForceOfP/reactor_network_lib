@@ -17,6 +17,7 @@ add_subdirectory(logger)
 add_subdirectory(time_utils)
 add_subdirectory(tcp)
 add_subdirectory(buffer)
+add_subdirectory(test)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -27,7 +28,10 @@ target_link_libraries(
     stdc++
     pthread
     fmt
+    gtest
+    gtest_main
 
+    Test_Lib
     TCP_Lib
     Event_Loop_lib
     Logger

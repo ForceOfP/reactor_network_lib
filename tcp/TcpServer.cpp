@@ -27,6 +27,7 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& listen_addr):
 void TcpServer::start() {
     if (!started_) {
         started_ = true;
+        pool_->start();
     }
 
     if (!acceptor_->listenning()) {

@@ -11,14 +11,13 @@ EventLoopThread::EventLoopThread():
     exiting_(false), 
     thread_(),
     mut_(),
-    cond_(),
-    ready_(false)
+    cond_()
 {}
 
 EventLoopThread::~EventLoopThread() {
     exiting_ = true;
     loop_->quit();
-    thread_.join();
+    if (thread_.joinable()) thread_.join();
 }
 
 EventLoop* EventLoopThread::start_loop() {
@@ -27,7 +26,7 @@ EventLoop* EventLoopThread::start_loop() {
     {
         std::unique_lock<std::mutex> lock(mut_);
         while (loop_ == nullptr) {
-            cond_.wait(lock, [&]{return ready_;});
+            cond_.wait(lock);
         }
     }
 
@@ -40,8 +39,7 @@ void EventLoopThread::thread_func() {
     {
         std::lock_guard<std::mutex> lock(mut_);
         loop_ = &loop;
-        ready_ = true;
-        cond_.notify_one();
+        cond_.notify_all();
     }
 
     loop.loop();

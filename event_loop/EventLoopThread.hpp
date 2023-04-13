@@ -24,7 +24,6 @@ private:
     std::thread thread_;
     mutable std::mutex mut_;
     std::condition_variable cond_;
-    bool ready_;
 };
 
 #endif
