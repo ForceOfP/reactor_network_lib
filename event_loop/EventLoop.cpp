@@ -61,7 +61,6 @@ EventLoop::EventLoop():
         ss.clear();
         
         LOG_FATAL << fmt::format("Another EventLoop exists in this thread {}", t);
-        exit(1);
     } else {
         t_loop_in_this_thread = this;
     }

@@ -27,8 +27,8 @@ public:
 
     InetAddress get_server_address() {return server_addr_;}   
 
-    void start();
-    void restart();
+    void start(); 
+    void restart(); // must be called in loop thread
     void stop();
 
     enum class State {Disconnected, Connecting, Connected};
