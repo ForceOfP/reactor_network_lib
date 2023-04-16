@@ -10,4 +10,4 @@ CMakeCache.txt
 
 *.log
 network
-init.hpp
+.VSCodeCounter
