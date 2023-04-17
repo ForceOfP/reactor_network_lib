@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #ifndef EL_MARCO
 #define EL_MARCO
 
@@ -58,9 +59,9 @@ private:
 
     using ChannelList = std::vector<Channel*>;
 
-    bool looping_;
-    bool quit_;
-    bool calling_pending_functors_;
+    std::atomic_bool looping_;
+    std::atomic_bool quit_;
+    std::atomic_bool calling_pending_functors_;
     const std::thread::id thread_id_;
     std::unique_ptr<Epoller> poller_;
     std::unique_ptr<TimerQueue> timer_queue_;

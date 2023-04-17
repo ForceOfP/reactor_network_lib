@@ -29,7 +29,7 @@ public:
         return connection_;
     }
 
-    bool retry() const { return retry_; };
+    bool get_retry() const { return retry_; }
     void enable_retry() { retry_ = true; }
 
     // not thread safe

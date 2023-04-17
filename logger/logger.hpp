@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #ifndef LOGGER_MARCO
 #define LOGGER_MARCO
 
@@ -29,7 +30,7 @@ public:
 private:
     std::ofstream log_handle_;
     std::vector<Logger*> loggers_;
-    std::atomic<bool> running_ = true;
+    std::atomic_bool running_ = true;
 };
 
 class Logger {

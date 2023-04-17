@@ -15,8 +15,8 @@
 
 TcpServer::TcpServer(EventLoop* loop, const InetAddress& listen_addr):
     name_(listen_addr.to_host_port()),
-    acceptor_(new Acceptor(loop, listen_addr)),
-    pool_(new EventLoopThreadPool(loop)),
+    acceptor_(std::make_unique<Acceptor>(loop, listen_addr)),
+    pool_(std::make_unique<EventLoopThreadPool>(loop)),
     started_(false),
     next_conn_id_(1),
     loop_(CHECK_NOTNULL(loop)) {
@@ -45,7 +45,6 @@ void TcpServer::new_connection(int sock_fd, const InetAddress& peer_addr) {
     LOG_INFO << fmt::format("TcpServer::new_connection [{}] - new connection [{}] from {}"
                     , name_, conn_name, peer_addr.to_host_port());
     InetAddress local_addr(sockets::getLocalAddr(sock_fd));
-    // FIXME poll with zero timeout to double confirm the new connection
     EventLoop* io_loop = pool_->get_next_loop();
     TcpConnectionPtr conn = std::make_shared<TcpConnection>(io_loop, conn_name, sock_fd, local_addr, peer_addr);
 

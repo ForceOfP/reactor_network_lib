@@ -40,7 +40,7 @@ TEST(EventLoop, get_event_loop_of_current_thread) {
         loop.quit();
     };
 
-    loop.run_after(0.00001, test);
+    loop.run_after(0.001, test);
     loop.loop();
 }
 
@@ -51,20 +51,20 @@ TEST(EventLoop, quit) {
         loop.quit();
     };
 
-    loop.run_after(0.00001, test);
+    loop.run_after(0.001, test);
     loop.loop();
     ASSERT_TRUE(true);
 }
 
 TEST(EventLoop, run_after) {
-    const auto delay = 1ms;
+    const auto delay = 2ms;
     EventLoop loop;
 
     auto test = [&loop]() {
         loop.quit();
     };
 
-    loop.run_after(0.0001, test); // 0.1ms
+    loop.run_after(0.001, test); // 1ms
     auto start = std::chrono::system_clock::now();
     loop.loop();
     auto end = std::chrono::system_clock::now();
@@ -72,7 +72,7 @@ TEST(EventLoop, run_after) {
 }
 
 TEST(EventLoop, run_every) {
-    const auto delay = 4ms;
+    const auto delay = 10ms;
     EventLoop loop;
     int cnt = 0;
     auto test = [&loop, &cnt]() {
@@ -82,7 +82,7 @@ TEST(EventLoop, run_every) {
         }
     };
 
-    loop.run_every(0.0001, test); // 0.1ms
+    loop.run_every(0.001, test); // 1ms
     auto start = std::chrono::system_clock::now();
     loop.loop();
     auto end = std::chrono::system_clock::now();
@@ -93,12 +93,17 @@ TEST(EventLoop, run_every) {
 TEST(EventLoop, run_in_loop) {
     EventLoop loop;
 
-    auto test = [&loop]() {
+    auto my_quit = [&loop]() {
         ASSERT_TRUE(true);
         loop.quit();
     };
 
-    loop.queue_in_loop(test);
+    auto test = [&loop, &my_quit] {
+        loop.run_in_loop(my_quit);
+    };
+
+    loop.run_after(0.001, test);
+    loop.loop();
 }
 
 // TODO: mock IO-thread and test
@@ -111,5 +116,6 @@ TEST(EventLoop, wakeup) {
         ASSERT_TRUE(true);
     };
 
-    loop.run_in_loop(test);
+    loop.run_after(0.001, test);
+    loop.loop();
 }

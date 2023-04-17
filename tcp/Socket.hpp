@@ -21,6 +21,7 @@ public:
     int accept(InetAddress* peer_addr);
 
     void set_reuse_addr(bool on);
+    // @TODO: add reuse port
     void set_tcp_no_delay(bool on);
 
     void shutdown_write();

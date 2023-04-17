@@ -10,6 +10,8 @@
 #include <memory>
 #include <mutex>
 
+#include <sys/poll.h>
+
 namespace detail
 {
 
@@ -26,7 +28,7 @@ void remove_connector(const ConnectorPtr& connector) {
 
 TcpClient::TcpClient(EventLoop* loop, const InetAddress& server_addr):
     loop_(CHECK_NOTNULL(loop)),
-    connector_(new Connector(loop, server_addr)),
+    connector_(std::make_shared<Connector>(loop, server_addr)),
     retry_(false),
     connect_(true),
     next_conn_id_(1) {
@@ -79,6 +81,16 @@ void TcpClient::stop() {
 
 void TcpClient::new_connection(int sock_fd) {
     loop_->assert_in_loop_thread();
+
+    struct pollfd test_conn;
+    test_conn.fd = sock_fd;
+    test_conn.events = POLLIN;
+    test_conn.revents = 0;
+    if (::poll(&test_conn, 1, 0) < 0) {
+        LOG_SYSERR << fmt::format("TcpClient::new_connection(): cannot connect to fd: {}", sock_fd);
+        return;
+    }
+
     InetAddress peer_addr(sockets::getPeerAddr(sock_fd));
 
     char buf[32];
@@ -87,9 +99,7 @@ void TcpClient::new_connection(int sock_fd) {
     std::string conn_name = buf;
 
     InetAddress local_addr(sockets::getLocalAddr(sock_fd));
-    // FIXME poll with zero timeout to double confirm the new connection
-    // FIXME use make_shared if necessary
-    TcpConnectionPtr conn = make_shared<TcpConnection>(loop_, conn_name, sock_fd, local_addr, peer_addr);
+    TcpConnectionPtr conn = std::make_shared<TcpConnection>(loop_, conn_name, sock_fd, local_addr, peer_addr);
     conn->set_connection_callback(connection_callback_);
     conn->set_message_callback(message_callback_);
     conn->set_write_callback(write_complete_callback_);

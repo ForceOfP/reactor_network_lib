@@ -1,6 +1,8 @@
 #include "EventLoop.hpp"
+#include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <sys/types.h>
@@ -46,10 +48,10 @@ EventLoop::EventLoop():
     quit_(false), 
     calling_pending_functors_(false), 
     thread_id_(std::this_thread::get_id()), 
-    poller_(new Epoller(this)),
-    timer_queue_(new TimerQueue(this)),
+    poller_(std::make_unique<Epoller>(this)),
+    timer_queue_(std::make_unique<TimerQueue>(this)),
     wakeup_fd_(create_event_fd()),
-    wakeup_channel_(new Channel(this, wakeup_fd_)) {
+    wakeup_channel_(std::make_unique<Channel>(this, wakeup_fd_)) {
     std::stringstream ss;
     std::string t;
     ss << thread_id_;
@@ -83,11 +85,15 @@ void EventLoop::loop() {
     assert(!looping_);
     assert_in_loop_thread();
     looping_ = true;
-    quit_ = false;
+    quit_ = false;  // FIXME: what if someone calls quit() before loop() ?
+
+    LOG_TRACE << "EventLoop start looping";
 
     while (!quit_) {
+        looping_.notify_one();
         active_channels_.clear();
         poll_return_time_ = poller_->poll(k_poll_time_ms, &active_channels_);
+        // @TODO: sort channel by priority
         for (auto & active_channel : active_channels_) {
             active_channel->handle_event(poll_return_time_);
         }
@@ -111,6 +117,7 @@ void EventLoop::abort_not_in_loop_thread() {
 
 void EventLoop::quit() {
     quit_ = true;
+
     if (!is_in_loop_thread()) {
         wakeup();
     }

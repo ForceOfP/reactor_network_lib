@@ -23,6 +23,9 @@ public:
     TimerQueue(EventLoop* loop);
     ~TimerQueue();
 
+    TimerQueue(const TimerQueue&) = delete;
+    TimerQueue& operator=(const TimerQueue&) = delete;
+
     TimerId add_timer(const TimerCallback& cb, TimeStamp when, double interval);
 
     void cancel(TimerId id);

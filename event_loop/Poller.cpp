@@ -9,13 +9,13 @@
 #include <sys/poll.h>
 
 #define FMT_HEADER_ONLY
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 Poller::Poller(EventLoop* loop): owner_loop_(loop) {}
 
 TimeStamp Poller::poll(int time_out_ms, ChannelList *active_channels) {
     // xxx pollfds_ shouldn't change
-    int num_events = ::poll(&*poll_fds_.data(), poll_fds_.size(), time_out_ms);
+    int num_events = ::poll(poll_fds_.data(), poll_fds_.size(), time_out_ms);
     TimeStamp now{std::chrono::system_clock::now()};
 
     if (num_events > 0) {

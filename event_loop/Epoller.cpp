@@ -43,7 +43,7 @@ Epoller::~Epoller() {
 
 TimeStamp Epoller::poll(int timeout_ms, ChannelList* active_channels) {
     int num_events = ::epoll_wait(
-        epoll_fd_, &*events_.begin(), static_cast<int>(events_.size()), timeout_ms);
+        epoll_fd_, events_.data(), static_cast<int>(events_.size()), timeout_ms);
     TimeStamp now(TimeStamp::now());
     if (num_events > 0) {
         LOG_TRACE << fmt::format("{} events happened", num_events);

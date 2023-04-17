@@ -27,13 +27,15 @@ public:
     [[nodiscard]] bool listenning() const {return listenning_;}
     void listen();
 private:
-    void handle_read();
+    [[maybe_unused]] void handle_read_once();
+    [[maybe_unused]] void handle_read_all();
 
     EventLoop* loop_;
     Socket accept_socket_;
     Channel accept_channel_;
     NewConnectionCallback new_connection_callback_;
     bool listenning_;
+    int idle_fd_;
 };
 
 #endif

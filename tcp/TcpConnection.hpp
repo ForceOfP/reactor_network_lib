@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #ifndef Tcp_Connection_Marco
 #define Tcp_Connection_Marco
 
@@ -38,7 +39,7 @@ public:
     void send(std::string_view message);
     void shutdown();
     void set_tcp_no_delay(bool on);
-    // TODO: add tcp keep-alive
+    // @TODO: add tcp keep-alive
 
     enum class State {Connecting, Connected, Disconnected, Disconnecting};
 private:
@@ -54,7 +55,7 @@ private:
 
     EventLoop* loop_;
     std::string name_;
-    State state_; // FIXME: use atomic variable
+    std::atomic<State> state_; 
 
     std::unique_ptr<Socket> socket_;
     std::unique_ptr<Channel> channel_;

@@ -3,6 +3,7 @@
 #include "Socket.hpp"
 #include "../event_loop/Channel.hpp"
 #include "../event_loop/EventLoop.hpp"
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
@@ -93,11 +94,10 @@ void TcpConnection::send_in_loop(std::string_view message) {
 }
 
 void TcpConnection::shutdown() {
-    // FIXME: use compare and swap
-    if (state_ == State::Connected) {
-        set_state(State::Disconnecting);
-        // FIXME: shared_from_this()?
-        loop_->run_in_loop([this] {shutdown_in_loop();});
+    auto expected = State::Connected;
+    while (state_.compare_exchange_strong(expected, State::Disconnecting)) {
+        auto this_shared = shared_from_this();
+        loop_->run_in_loop([this_shared] {this_shared->shutdown_in_loop();});
     }
 }
 
