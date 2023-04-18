@@ -1,12 +1,12 @@
 #pragma once
 
-#include <atomic>
 #ifndef EL_MARCO
 #define EL_MARCO
 
 #include "../logger/logger.hpp"
 #include "../time_utils/TimerId.hpp"
 #include "../time_utils/TimeDataStructure.hpp"
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -14,7 +14,7 @@
 #include <vector>
 
 class Channel;
-class Epoller;
+class PollerInterface;
 class TimerQueue;
 
 class EventLoop {
@@ -63,7 +63,7 @@ private:
     std::atomic_bool quit_;
     std::atomic_bool calling_pending_functors_;
     const std::thread::id thread_id_;
-    std::unique_ptr<Epoller> poller_;
+    std::unique_ptr<PollerInterface> poller_;
     std::unique_ptr<TimerQueue> timer_queue_;
     int wakeup_fd_;
     std::unique_ptr<Channel> wakeup_channel_;

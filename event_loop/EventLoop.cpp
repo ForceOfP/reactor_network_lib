@@ -17,7 +17,7 @@
 #include <fmt/format.h>
 
 #include "Channel.hpp"
-#include "Epoller.hpp"
+#include "../poller/DefaultPoller.hpp"
 #include "../time_utils/TimerQueue.hpp"
 #include "../time_utils/Timer.hpp"
 
@@ -48,7 +48,7 @@ EventLoop::EventLoop():
     quit_(false), 
     calling_pending_functors_(false), 
     thread_id_(std::this_thread::get_id()), 
-    poller_(std::make_unique<Epoller>(this)),
+    poller_(newDefaultPoller(this)),
     timer_queue_(std::make_unique<TimerQueue>(this)),
     wakeup_fd_(create_event_fd()),
     wakeup_channel_(std::make_unique<Channel>(this, wakeup_fd_)) {
