@@ -20,14 +20,14 @@ class TimerQueue;
 class EventLoop {
 public:
     EventLoop();
-    ~EventLoop();
+    virtual ~EventLoop();
 
     EventLoop(const EventLoop& src) = delete;
     EventLoop& operator=(const EventLoop& rhs) = delete;
 
     using Functor = std::function<void()>;
 
-    void loop();
+    virtual void loop();
     void assert_in_loop_thread() {
         if (!is_in_loop_thread()) {
             abort_not_in_loop_thread();
@@ -52,7 +52,7 @@ public:
 
     void wakeup();
     void cancel(TimerId id);
-private:
+protected:
     void abort_not_in_loop_thread();
     void handle_read();
     void do_pending_functors();

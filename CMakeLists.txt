@@ -19,6 +19,7 @@ add_subdirectory(tcp)
 add_subdirectory(buffer)
 add_subdirectory(test)
 add_subdirectory(poller)
+add_subdirectory(thread_pool)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -33,6 +34,7 @@ target_link_libraries(
     gtest_main
 
     Test_Lib
+    Thread_Pool_Lib
     TCP_Lib
     Event_Loop_lib
     Logger

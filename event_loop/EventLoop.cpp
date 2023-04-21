@@ -90,7 +90,6 @@ void EventLoop::loop() {
     LOG_TRACE << "EventLoop start looping";
 
     while (!quit_) {
-        looping_.notify_one();
         active_channels_.clear();
         poll_return_time_ = poller_->poll(k_poll_time_ms, &active_channels_);
         // @TODO: sort channel by priority

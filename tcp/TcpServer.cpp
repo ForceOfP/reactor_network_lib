@@ -54,6 +54,8 @@ void TcpServer::new_connection(int sock_fd, const InetAddress& peer_addr) {
     conn->set_close_callback([this](auto && PH1) { remove_connection(std::forward<decltype(PH1)>(PH1)); });
     conn->set_write_callback(write_complete_callback_);
     conn->connect_established();
+
+    io_loop->run_in_loop([&conn] {conn->connect_established();});
 }
 
 void TcpServer::remove_connection(const TcpConnectionPtr& conn) {
