@@ -48,6 +48,9 @@ public:
     void set_index(int i) {index_ = i;}
 
     EventLoop* owner_loop() {return loop_;}
+    
+    [[nodiscard]] bool has_owner_loop() const { return loop_ != nullptr; }
+    void set_owner_loop(EventLoop* loop) { loop_ = loop; }
 private:
     void update();
 

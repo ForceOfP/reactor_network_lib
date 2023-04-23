@@ -42,6 +42,8 @@ public:
     // @TODO: add tcp keep-alive
 
     enum class State {Connecting, Connected, Disconnected, Disconnecting};
+
+    void set_owner_loop(EventLoop* loop);
 private:
 
     void set_state(State s) {state_ = s;}

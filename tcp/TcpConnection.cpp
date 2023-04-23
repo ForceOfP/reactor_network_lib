@@ -35,11 +35,11 @@ TcpConnection::TcpConnection(EventLoop* loop,
                             int sock_fd,
                             const InetAddress& local_addr,
                             const InetAddress& peer_addr):
-    loop_(CHECK_NOTNULL(loop)),
+    loop_(nullptr),
     name_(name),
     state_(State::Connecting),
     socket_(std::make_unique<Socket>(sock_fd)),
-    channel_(std::make_unique<Channel>(loop, sock_fd)),
+    channel_(std::make_unique<Channel>(nullptr, sock_fd)),
     local_addr_(local_addr),
     peer_addr_(peer_addr) {
     LOG_DEBUG << fmt::format("TcpConnection::ctor[{}] at fd = {}", name_, sock_fd);
@@ -183,4 +183,10 @@ void TcpConnection::handle_error() {
 
 void TcpConnection::set_tcp_no_delay(bool on) {
     socket_->set_tcp_no_delay(on);
+}
+
+void TcpConnection::set_owner_loop(EventLoop* loop) {
+    assert(!loop_);
+    channel_->set_owner_loop(loop);
+    loop_ = loop;
 }

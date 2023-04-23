@@ -19,14 +19,15 @@ TEST(TcpConnection, connect) {
     auto conn = std::make_shared<TcpConnection>(&loop, "1", sock_fd, local, peer);
 
     bool visited_connect = false;    
-    auto connect_functor = [&visited_connect](TcpConnectionPtr p) {
+    auto connect_functor = [&visited_connect](const TcpConnectionPtr& p) {
         visited_connect = true;
     };
+    conn->set_owner_loop(&loop);
     conn->set_connection_callback(connect_functor);
     conn->connect_established();
 
     visited_connect = false;    
-    auto close_functor = [&visited_connect](TcpConnectionPtr p) {
+    auto close_functor = [&visited_connect](const TcpConnectionPtr& p) {
         visited_connect = true;
     };
     conn->set_close_callback(close_functor);

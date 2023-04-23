@@ -100,6 +100,7 @@ void TcpClient::new_connection(int sock_fd) {
 
     InetAddress local_addr(sockets::getLocalAddr(sock_fd));
     TcpConnectionPtr conn = std::make_shared<TcpConnection>(loop_, conn_name, sock_fd, local_addr, peer_addr);
+    conn->set_owner_loop(loop_);
     conn->set_connection_callback(connection_callback_);
     conn->set_message_callback(message_callback_);
     conn->set_write_callback(write_complete_callback_);
